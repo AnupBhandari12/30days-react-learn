@@ -4,7 +4,15 @@ function useLocalStorage(key, initialValue){
     const [value, setValue] = useState(()=>{
         const savedValue = localStorage.getItem(key);
 
-        return savedValue ? JSON.parse(savedValue) : initialValue;
+        if(!savedValue){
+            return initialValue;
+
+        }
+        try {
+            return JSON.parse(savedValue);
+        } catch  {
+            return savedValue;
+        }
     })
 
     useEffect(() => {
