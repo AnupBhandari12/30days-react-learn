@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: leadflow-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: leadflowdb
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - leadflow_data:/var/lib/postgresql/data
+
+volumes:
+  leadflow_data:
