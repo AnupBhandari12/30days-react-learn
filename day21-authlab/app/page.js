@@ -1,5 +1,6 @@
 import RegisterForm from "./components/RegisterForm";
 
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
@@ -15,7 +16,9 @@ export default function Home() {
         </div>
 
         <RegisterForm />
+
       </div>
+
     </main>
   )
 }

@@ -2,84 +2,92 @@
 
 import prisma from "../lib/prisma";
 import bcrypt from "bcryptjs";
+import { createSession , deleteCurrentSession } from "../lib/session";
+import { redirect } from "next/navigation";
 
-export async function registerUser(prevState , formData) {
+
+
+export async function registerUser(prevState, formData) {
     const name = formData.get("name");
     const email = formData.get("email");
     const password = formData.get("password");
 
-    if(!name || !email || !password){
-        return{
-            error : "All fields are required",
+    if (!name || !email || !password) {
+        return {
+            error: "All fields are required",
         };
     }
 
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
-        where : {
-            email : normalizedEmail,
+        where: {
+            email: normalizedEmail,
         }
     });
 
-    if(existingUser){
+    if (existingUser) {
         return {
-            error : "Email already registered.",
+            error: "Email already registered.",
         };
     }
 
-    const passwordHash = await bcrypt.hash(password , 12);
+    const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.create({
-        data : {
-            name : name.trim(),
-            email : normalizedEmail,
+        data: {
+            name: name.trim(),
+            email: normalizedEmail,
             passwordHash,
         },
     });
 
     return {
-        success : "Account created successfully .",
+        success: "Account created successfully .",
     }
 }
 
-export async function loginUser(prevState , formData) {
+export async function loginUser(prevState, formData) {
     const email = formData.get("email");
     const password = formData.get("password");
 
-    if(!email || !password){
-        return{
-            error : "Email and password are required",
-            success : "",
+    if (!email || !password) {
+        return {
+            error: "Email and password are required",
+            success: "",
         };
     }
 
     const normalizedEmail = email.trim().toLowerCase();
 
     const user = await prisma.user.findUnique({
-        where : {
-            email : normalizedEmail
+        where: {
+            email: normalizedEmail
         },
     });
 
-    if(!user) {
+    if (!user) {
         return {
-            error : "Invalid email or Password",
-            success : "",
+            error: "Invalid email or Password",
+            success: "",
         };
     }
 
-    const passwordMatch = await bcrypt.compare(password , user.passwordHash);
+    const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 
-    if(!passwordMatch){
-        return  {
-            error : "Invalid email or password",
-            success : "",
+    if (!passwordMatch) {
+        return {
+            error: "Invalid email or password",
+            success: "",
         };
     }
+    await createSession(user.id);
 
-    return {
-        error : "",
-        success : `Welcome back,${user.name}`,
-    }
+    redirect("/dashboard");
+}
+
+export async function logoutUser(){
+    await deleteCurrentSession();
+
+    redirect("/login")
 }
